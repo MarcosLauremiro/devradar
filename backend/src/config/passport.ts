@@ -1,10 +1,23 @@
 import passport from "passport";
 import { Strategy as GitHubStrategy } from "passport-github2";
 import { Request } from "express";
-import { User } from "../models/User";
+import { User } from "../models/user";
 import dotenv from "dotenv";
 
 dotenv.config();
+
+passport.serializeUser((user: any, done) => {
+  done(null, user.id);
+});
+
+passport.deserializeUser(async (id, done) => {
+  try {
+    const user = await User.findById(id);
+    done(null, user);
+  } catch (err) {
+    done(err, null);
+  }
+});
 
 passport.use(
   new GitHubStrategy(

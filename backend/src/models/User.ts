@@ -19,11 +19,13 @@ export interface IUser extends Document {
   updatedAt: Date;
   email?: string;
   password?: string;
+  isGithubLinked?: boolean;
 }
 
 const userSchema = new Schema<IUser>(
   {
-    githubId: { type: String, unique: true },
+    githubId: { type: String },
+    isGithubLinked: { type: Boolean, default: false },
     username: { type: String, required: true },
     name: { type: String },
     email: { type: String, unique: true, sparse: true },
@@ -38,12 +40,10 @@ const userSchema = new Schema<IUser>(
     experienceLevel: {
       type: String,
       enum: ["Junior", "Pleno", "Senior"],
-      default: "Junior",
     },
     availability: {
       type: String,
       enum: ["Freelancer", "Full-time", "Part-time", "Unavailable"],
-      default: "Unavailable",
     },
     website: { type: String },
     linkedin: { type: String },

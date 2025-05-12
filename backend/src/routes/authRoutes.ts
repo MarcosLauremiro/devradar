@@ -1,13 +1,13 @@
 import { Router } from "express";
 import passport from "passport";
 import { register, login } from "../controllers/authController";
-import { githubCallback } from "../controllers/authController";
+import { authenticate } from "../middlewares/authMiddleware";
 
 const router = Router();
 
 /**
  * @openapi
- * /auth/register:
+ * /api/auth/register:
  *   post:
  *     summary: Registra um novo usuário com email e senha
  *     tags:
@@ -41,7 +41,7 @@ router.post("/register", register);
 
 /**
  * @openapi
- * /auth/login:
+ * /api/auth/login:
  *   post:
  *     summary: Login com email e senha
  *     tags:
@@ -70,7 +70,7 @@ router.post("/login", login);
 
 /**
  * @openapi
- * /auth/github:
+ * /api/auth/github:
  *   get:
  *     summary: Inicia a autenticação com o GitHub
  *     tags:
@@ -80,13 +80,13 @@ router.post("/login", login);
  *         description: Redireciona para o GitHub para autenticação
  */
 router.get(
-  "/auth/github",
-  passport.authorize("github", { scope: ["user:email"] })
+  "/github",
+  passport.authenticate("github", { scope: ["user:email"] })
 );
 
 /**
  * @openapi
- * /auth/github/callback:
+ * /api/auth/github/callback:
  *   get:
  *     summary: Callback da autenticação do GitHub
  *     tags:
@@ -98,10 +98,50 @@ router.get(
  *         description: Falha na autenticação
  */
 router.get(
-  "/auth/github/callback",
-  passport.authorize("github", { failureRedirect: "/login" }),
+  "/github/callback",
+  passport.authenticate("github", { failureRedirect: "/login" }),
   (req, res) => {
     res.redirect("/dashboard");
+  }
+);
+
+/**
+ * @openapi
+ * /api/auth/github/connect:
+ *   get:
+ *     summary: Conecta uma conta GitHub a um usuário autenticado
+ *     tags:
+ *       - Autenticação
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       302:
+ *         description: Redireciona para o GitHub para vincular a conta
+ */
+router.get(
+  "/github/connect",
+  authenticate,
+  passport.authorize("github", { scope: ["user:email"] })
+);
+
+/**
+ * @openapi
+ * /api/auth/github/connect/callback:
+ *   get:
+ *     summary: Callback para vincular conta GitHub a um usuário autenticado
+ *     tags:
+ *       - Autenticação
+ *     responses:
+ *       200:
+ *         description: Conta GitHub vinculada com sucesso
+ *       401:
+ *         description: Não autorizado
+ */
+router.get(
+  "/github/connect/callback",
+  passport.authorize("github", { failureRedirect: "/login" }),
+  (req, res) => {
+    res.redirect(process.env.FRONTEND_URL || "/"); // ou retornar JSON, se preferir
   }
 );
 

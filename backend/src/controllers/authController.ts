@@ -1,7 +1,6 @@
 import { NextFunction, Request, Response } from "express";
-import { IUser, User } from "../models/User";
-import { hashPassword, comparePassword } from "../utils/hash";
-import { generateToken } from "../utils/jwt";
+import { User } from "../models/user";
+import { comparePassword } from "../utils/hash";
 import { loginUser, registerUser } from "../services/authService";
 import { handleGitHubLogin } from "../services/authService";
 
@@ -36,6 +35,11 @@ export const register = async (
 export const login = async (req: Request, res: Response): Promise<void> => {
   try {
     const { email, password } = req.body;
+
+    if (!email || !password) {
+      res.status(400).json({ error: "Campos obrigatórios ausentes" });
+      return;
+    }
 
     const user = await User.findOne({ email });
     if (!user || !user.password) {

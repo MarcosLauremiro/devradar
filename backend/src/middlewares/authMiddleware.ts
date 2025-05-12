@@ -19,6 +19,7 @@ export const authenticate = (
 
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
+    console.log("decoded JWT:", decoded); // Deve conter _id
     req.user = decoded;
     next();
   } catch (err) {

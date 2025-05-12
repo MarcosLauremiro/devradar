@@ -1,6 +1,7 @@
-import { User } from "../models/User";
+import { User } from "../models/user";
 import { generateToken } from "../utils/jwt";
 import { comparePassword, hashPassword } from "../utils/hash";
+import { HttpError } from "../utils/httpError";
 
 export const registerUser = async (
   email: string,
@@ -8,8 +9,9 @@ export const registerUser = async (
   username: string
 ) => {
   const existingUser = await User.findOne({ email });
+
   if (existingUser) {
-    throw new Error("Email já registrado");
+    throw new HttpError("Email já registrado", 409);
   }
 
   const hashedPassword = await hashPassword(password);
@@ -28,12 +30,12 @@ export const registerUser = async (
 export const loginUser = async (email: string, password: string) => {
   const user = await User.findOne({ email });
   if (!user || !user.password) {
-    throw new Error("Credenciais inválidas");
+    throw new HttpError("Credenciais inválidas", 401);
   }
 
   const match = await comparePassword(password, user.password as string);
   if (!match) {
-    throw new Error("Email ou senha incorretos");
+    throw new HttpError("Email ou senha incorretos", 401);
   }
 
   const token = generateToken(user);

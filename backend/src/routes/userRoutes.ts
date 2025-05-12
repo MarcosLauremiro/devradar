@@ -1,5 +1,9 @@
 import { Router } from "express";
-import { listUsers, getUserById } from "../controllers/userController";
+import {
+  listUsers,
+  getUserById,
+  updateProfile,
+} from "../controllers/userController";
 import { authenticate } from "../middlewares/authMiddleware";
 
 const router = Router();
@@ -45,7 +49,7 @@ router.get("/users", authenticate, listUsers);
  *     tags:
  *       - Usuários
  *     security:
- *       - cookieAuth: []
+ *       - bearerAuth: []
  *     parameters:
  *       - name: id
  *         in: path
@@ -62,5 +66,38 @@ router.get("/users", authenticate, listUsers);
  *         description: Usuário não encontrado
  */
 router.get("/users/:id", authenticate, getUserById);
+
+/**
+ * @openapi
+ * /api/users/me:
+ *   put:
+ *     summary: Atualiza os dados do perfil do usuário autenticado
+ *     tags:
+ *       - Usuários
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *               bio:
+ *                 type: string
+ *               technologies:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *     responses:
+ *       200:
+ *         description: Usuário atualizado
+ *       401:
+ *         description: Não autenticado
+ */
+
+router.put("/users/me", authenticate, updateProfile);
 
 export default router;
